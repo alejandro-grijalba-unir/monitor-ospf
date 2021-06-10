@@ -34,7 +34,7 @@ def visor(request, archivo):
    #  if (lsa['area'] == 'backbone'):
    #    print(lsa['id'], lsa['type'] , lsa['originator'] , lsa['area'], lsa['body'])
    
-   return render(request, 'myapp/index.html', context)
+   return render(request, 'monitor/index.html', context)
    
 
 def generar(request):
