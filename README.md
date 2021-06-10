@@ -12,6 +12,7 @@ Ha sido desarrollada como un Trabajo de Fin de Grado para el Grado en Informáti
 Requiere de Python 3.6 y Django 3.2.
 
 ```
+git clone https://github.com/alejandro-grijalba-unir/monitor-ospf.git
 git pull && python3 manage.py makemigrations && python3 manage.py migrate --run-syncdb
 python3 manage.py createsuperuser
 ```
