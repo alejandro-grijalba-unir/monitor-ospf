@@ -1,0 +1,18 @@
+<html>
+<body>
+<a href="/">Volver</a>
+<hr/>
+Analizando: {{ nombre }}
+<hr/>
+<!--
+   #for lsa in lsdb:
+   #  if (lsa['area'] == 'backbone'):
+   #    print(lsa['id'], lsa['type'] , lsa['originator'] , lsa['area'], lsa['body'])
+-->
+
+{% for lsa in lsdb %}
+ {% if lsa.type == 'router' %}
+  {{ lsa.originator }}
+  <br/>
+ {% endif %}
+{% endfor %}
