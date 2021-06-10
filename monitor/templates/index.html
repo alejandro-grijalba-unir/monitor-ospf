@@ -1,0 +1,17 @@
+<html>
+<body>
+Generar instantanea nueva:
+<form action="/generar" method="post">
+ {% csrf_token %}
+ <label for="nombre">Nombre:</label> <input type="text" id="nombre" name="nombre"></input>
+ <br/>
+ <input type="submit" value="Generar"></input>
+</form>
+
+<hr/>
+Listado de archivos guardados:
+<br/>
+{% for archivo in lsdb %}
+  <a href="{{ archivo.archivo }}/visor/">{{ archivo.nombre }}</a>
+  <br/>
+{% endfor %}
