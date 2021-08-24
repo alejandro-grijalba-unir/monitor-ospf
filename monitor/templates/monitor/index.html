@@ -1,18 +1,186 @@
+{% load static %}
 <html>
-<body>
-<a href="/">Volver</a>
-<hr/>
-Analizando: {{ nombre }}
-<hr/>
-<!--
-   #for lsa in lsdb:
-   #  if (lsa['area'] == 'backbone'):
-   #    print(lsa['id'], lsa['type'] , lsa['originator'] , lsa['area'], lsa['body'])
--->
+	<head>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+		<script src="{% static 'monitor/cytoscape.min.js' %}"></script>
+		<script src="{% static 'monitor/cytoscape-cose-bilkent.js' %}"></script>
+		<!--	<script src="{% static 'monitor/cytoscape-avsdf.js' %}"></script> -->
+		<!--<script src="{% static 'monitor/springy.js' %}"></script>
+		<script src="{% static 'monitor/springyui.js' %}"></script>-->
+	</head>
+<body style="height: 100%; margin: 0;">
+<div style="height: 100%; margin: 0; display: flex; flex-direction: column">
 
-{% for lsa in lsdb %}
- {% if lsa.type == 'router' %}
-  {{ lsa.originator }}
-  <br/>
- {% endif %}
-{% endfor %}
+<a href="/">Volver</a>
+<hr style="width: 99%; margin: 0; padding: 0"/>
+Analizando: {{ nombre }}
+<hr style="width: 100%"/>
+
+<div id="cy" style="display: flex; min-width: 50%; min-height: 50%; flex: 1 1 auto"></div>
+<!-- <canvas id="springydemo" width="1500" height="1000" /> -->
+
+</div>
+<script>
+var i=0;
+var config = {
+    container: document.getElementById('cy'),
+    elements: [
+                
+
+    // Dibujar los nodos de routers
+    {% for router in grafo.routers %}
+        {
+            data: {
+                id:  '{{ router }}',
+                
+                numero: 'R_' + i++,
+                type: 'router',
+                
+            }
+        },
+    {% endfor %}
+
+
+    // Dibujar las aristas de adyacencias ptp de routers
+    {% for router, vecinos in grafo.routers.items %}
+        {% for vecino in vecinos %}
+            {
+                data: {
+                    id: '{{ router }}_{{ vecino }}',
+                    source: '{{ router }}',
+                    target: '{{ vecino }}',
+                }
+            },
+                
+        {% endfor %}
+    {% endfor %}
+
+
+    // Dibujar los nodos de redes broadcast/NBMA
+    {% for network in grafo.networks %}
+        {
+            data: {
+                id:  'N_{{ network }}',
+                type: 'network'
+            }
+            
+        },
+    {% endfor %}
+
+    // Dibujar las aristas de redes
+    {% for network, vecinos in grafo.networks.items %}
+        {% for vecino in vecinos %}
+            {
+                data: {
+                    source:  'N_{{ network }}',
+                    target: '{{ vecino }}',
+                }
+            },
+        {% endfor %}
+    {% endfor %}
+
+
+    ],
+    
+    // Opciones
+    layout: {
+        name: 'cose-bilkent',
+	randomize: false,
+        nodeDimensionsIncludeLabels: true,
+        quality: 'proof',
+        padding: 40,
+        numIter: 10000,
+        idealEdgeLength: 100,
+	    /*
+        nodeRepulsion: 4000,
+        xedgeElasticity: 0.9,
+        xnestingFactor: 0.8,
+        xgravityRange: 10.0,
+	    */
+    },
+    style: [
+        {
+            selector: 'node',
+            style: {
+                'content': 'data(id)',
+                'labelValign': 'middle',
+                "text-valign" : "center",
+                "text-halign" : "center",
+                'width': 'label',
+                'height': 'label',
+                'padding': '0.2em',
+            }
+        },
+        {
+            selector: 'node[type="router"]',
+            style: {
+                'shape': 'square',
+                'background-color': '#88f',
+                'labelValign': 'middle',
+            }
+        },
+    ]
+};
+cy = cytoscape(config);
+
+
+
+var graph = new Springy.Graph();
+
+graph.addNodes(
+    // Dibujar los nodos de routers
+    {% for router in grafo.routers %}
+                '{{ router }}',
+    {% endfor %}
+
+    // Dibujar los nodos de redes broadcast/NBMA
+    {% for network in grafo.networks %}
+      'N_{{ network }}',
+    {% endfor %}
+)
+
+graph.addEdges(
+    // Dibujar las aristas de adyacencias ptp de routers
+    {% for router, vecinos in grafo.routers.items %}
+        {% for vecino in vecinos %}
+               [   '{{ router }}', '{{ vecino }}' ],
+        {% endfor %}
+    {% endfor %}
+
+
+
+    // Dibujar las aristas de redes
+    {% for network, vecinos in grafo.networks.items %}
+        {% for vecino in vecinos %}
+               [   'N_{{ network }}', '{{ vecino }}' ],
+        {% endfor %}
+    {% endfor %}
+);
+
+/*
+graph.addNodes('Dennis', 'Michael', 'Jessica', 'Timothy', 'Barbara')
+graph.addNodes('Amphitryon', 'Alcmene', 'Iphicles', 'Heracles');
+
+graph.addEdges(
+  ['Dennis', 'Michael', {color: '#00A0B0', label: 'Foo bar'}],
+  ['Michael', 'Dennis', {color: '#6A4A3C'}],
+  ['Michael', 'Jessica', {color: '#CC333F'}],
+  ['Jessica', 'Barbara', {color: '#EB6841'}],
+  ['Michael', 'Timothy', {color: '#EDC951'}],
+  ['Amphitryon', 'Alcmene', {color: '#7DBE3C'}],
+  ['Alcmene', 'Amphitryon', {color: '#BE7D3C'}],
+  ['Amphitryon', 'Iphicles'],
+  ['Amphitryon', 'Heracles'],
+  ['Barbara', 'Timothy', {color: '#6A4A3C'}]
+);
+*/
+
+/*
+jQuery(function(){
+  var springy = jQuery('#springydemo').springy({
+    graph: graph
+  });
+});
+*/
+</script>
+</body>

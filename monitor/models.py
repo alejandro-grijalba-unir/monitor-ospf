@@ -8,9 +8,10 @@ class LSDB(models.Model):
    archivo = models.IntegerField(primary_key=True)
    nombre = models.CharField(max_length=64)
    
-   
+  
+   # TODO: Deberia haber un formulario donde se escoja router y nombre de la captura
    def save(self, *args, **kwargs):
-      if self._state.adding:
+      if self._state.adding and self.archivo is None:
          self.archivo = int(datetime.now().timestamp())
       
          router = Router.objects.first()
