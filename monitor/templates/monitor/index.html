@@ -62,7 +62,7 @@ function buscar() {
         
         
             var ident = ele.data('id');
-            if (ident.includes(ultimaBusqueda))
+            if (ident.includes(ultimaBusqueda) && ultimaBusqueda != "")
                 ele.css('background-color','#f88')
             else
                 ele.css('background-color','')
