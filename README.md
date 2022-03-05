@@ -14,6 +14,7 @@ Requiere de Python 3.6 y Django 3.2.
 ```
 git clone https://github.com/alejandro-grijalba-unir/monitor-ospf.git
 cd monitor-ospf
+pip3 -r requirements.txt
 git pull && python3 manage.py makemigrations && python3 manage.py migrate --run-syncdb
 python3 manage.py createsuperuser
 ```
