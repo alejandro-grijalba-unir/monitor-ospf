@@ -5,8 +5,9 @@ from pathlib import Path
 from os import walk
 import re
 import glob
+import routeros_api
 
-from .models import LSDB
+from .models import Router
 
 def index(request):
     #return HttpResponse("Hello, world. You're at the polls index.")
@@ -100,7 +101,26 @@ def visor(request, archivo):
 # Generar archivo de volcado LSDB
 def generar(request):
    if request.POST:
-      lsdb = LSDB(nombre=request.POST['nombre'])
-      lsdb.save()
-      return HttpResponse("Generando archivo LSDB " + request.POST['nombre'])
+         archivo = request.POST['nombre']
+     
+         # TODO: Elegir router
+         router = Router.objects.first()
+         connection = routeros_api.RouterOsApiPool(router.ip, username=router.usuario, password=router.password, plaintext_login=True)
+         api = connection.get_api()
+         lsdb = api.get_resource('/routing/ospf/lsa')
+
+         contenido = {
+            'autor': '',
+            'descripcion': '',
+            'router': router.nombre,
+            'lsdb': lsdb.get(),
+         }
+         
+         BASE_DIR = Path(__file__).resolve().parent.parent
+         ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.json')
+         with open(ruta, 'w') as f:
+            json.dump(contenido, f, indent=2)
+
+
+         return HttpResponse("Generando archivo LSDB " + request.POST['nombre'])
       
