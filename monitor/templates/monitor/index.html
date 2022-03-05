@@ -1,25 +1,77 @@
-{% load static %}
-<html>
+<!doctype html>{% load static %}<html style="height: 100%">
 	<head>
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+		<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>-->
 		<script src="{% static 'monitor/cytoscape.min.js' %}"></script>
 		<script src="{% static 'monitor/cytoscape-cose-bilkent.js' %}"></script>
+		<link href="{% static 'monitor/bootstrap-5.1.0-dist/css/bootstrap.min.css' %}" rel="stylesheet" crossorigin="anonymous"></link>
+		<script src="{% static 'monitor/bootstrap-5.1.0-dist/js/bootstrap.bundle.min.js' %}" crossorigin="anonymous"></script>
 		<!--	<script src="{% static 'monitor/cytoscape-avsdf.js' %}"></script> -->
 		<!--<script src="{% static 'monitor/springy.js' %}"></script>
 		<script src="{% static 'monitor/springyui.js' %}"></script>-->
 	</head>
 <body style="height: 100%; margin: 0;">
-<div style="height: 100%; margin: 0; display: flex; flex-direction: column">
+<div class="container-fluid vh-100 d-flex flex-column">
+<nav class="navbar navbar-expand-lg navbar-light bg-light flex-shrink-0">
+    <div class="container">
+        <a class="navbar-brand" href="/">Inicio</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Link</a>
+                </li>
+            </ul>
+            <div class="navbar-nav me-auto" style="padding-left: 1em">Archivo: {{ nombre }}</div>
+            <form class="d-flex my-2 my-lg-0">
+                <input id="busca" class="form-control me-sm-2" type="search" placeholder="Equipo" aria-label="Buscar">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+</nav>
+<div id="top"></div>
 
+<script>
+var ultimaBusqueda="";
+
+function buscar() {
+    if ( document.getElementById('busca').value != ultimaBusqueda ) {
+        ultimaBusqueda = document.getElementById('busca').value;
+        cy.$('').each(function(ele) {
+        
+        
+            var ident = ele.data('id');
+            if (ident.includes(ultimaBusqueda))
+                ele.css('background-color','#f88')
+            else
+                ele.css('background-color','')
+            
+            //console.log($(this)))
+        })
+    }
+}
+
+document.getElementById('busca').addEventListener('keyup', buscar);
+document.getElementById('busca').addEventListener('change', buscar);
+</script>
+
+
+<!--
 <a href="/">Volver</a>
 <hr style="width: 99%; margin: 0; padding: 0"/>
 Analizando: {{ nombre }}
 <hr style="width: 100%"/>
+-->
 
-<div id="cy" style="display: flex; min-width: 50%; min-height: 50%; flex: 1 1 auto"></div>
-<!-- <canvas id="springydemo" width="1500" height="1000" /> -->
-
+<div class="row flex-grow-1" xstyle="display: flex; flex-shrink: 10; xheight: calc( 100% - 6px ); flex 1 1 auto">
+ <div id="cy" style="nodisplay: flex; width: 100%; height: 100%; noflex: 1 1 auto"></div>
+ <!-- <canvas id="springydemo" width="1500" height="1000" /> -->
+ </div>
 </div>
+</div>
+
 <script>
 var i=0;
 var config = {
@@ -183,5 +235,14 @@ jQuery(function(){
   });
 });
 */
+</script>
+
+<script>
+const navLinks = document.querySelectorAll('.nav-item')
+const menuToggle = document.getElementById('navbarSupportedContent')
+const bsCollapse = new bootstrap.Collapse(menuToggle, {toggle:false})
+navLinks.forEach((l) => {
+    l.addEventListener('click', () => { bsCollapse.toggle() })
+})
 </script>
 </body>
