@@ -15,7 +15,7 @@ class LSDB(models.Model):
          self.archivo = int(datetime.now().timestamp())
       
          router = Router.objects.first()
-         connection = routeros_api.RouterOsApiPool(router.ip, username=router.usuario, password=router.password)
+         connection = routeros_api.RouterOsApiPool(router.ip, username=router.usuario, password=router.password, plaintext_login=True)
          api = connection.get_api()
          lsdb = api.get_resource('/routing/ospf/lsa')
          
