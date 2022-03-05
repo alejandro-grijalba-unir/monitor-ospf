@@ -4,14 +4,24 @@ import pickle
 from pathlib import Path
 from os import walk
 import re
+import glob
 
 from .models import LSDB
 
 def index(request):
-   #return HttpResponse("Hello, world. You're at the polls index.")
-   #context = {'archivo': 'hola' }
-   context = {'lsdb' : LSDB.objects.all()}
-   return render(request, 'index.html', context)
+    #return HttpResponse("Hello, world. You're at the polls index.")
+    #context = {'archivo': 'hola' }
+    #context = {'lsdb' : LSDB.objects.all()}
+    
+    lista = glob.glob("lsdb/*.pickle")
+    archivos = []
+    for archivo in lista:
+      nombre = re.sub(r'lsdb.(.*)\.pickle', r'\1', archivo)
+      archivo={'nombre': nombre, 'archivo': nombre}
+      archivos.append(archivo)
+    context = {'lsdb' : archivos}
+    print(context)
+    return render(request, 'index.html', context)
 
 
 
@@ -70,7 +80,7 @@ def visor(request, archivo):
    
 
     context = {
-        'nombre': LSDB.objects.get(pk=archivo).nombre,
+        'nombre': archivo,
         'grafo' : grafo,
     }
 

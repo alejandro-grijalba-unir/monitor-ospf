@@ -12,6 +12,6 @@ Generar instantanea nueva:
 Listado de archivos guardados:
 <br/>
 {% for archivo in lsdb %}
-  <a href="{{ archivo.archivo }}/visor/">{{ archivo.nombre }}</a>
+  <a href="visor/{{ archivo.archivo }}">{{ archivo.nombre }}</a>
   <br/>
 {% endfor %}
