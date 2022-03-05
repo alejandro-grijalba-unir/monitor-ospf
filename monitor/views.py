@@ -50,7 +50,11 @@ def visor(request, archivo):
 
             body = lsa["body"].splitlines()
             for l in body:
+                # Routeros ~6.43
                 match = re.match(r"^ *link-type=Point-To-Point.* id=([0-9.]+)", l)
+                if not match:
+                    # RouterOS ~6.49
+                    match = re.match(r"^ *Point-To-Point ([0-9.]+)", l)
                 if match:
                     vecino = match.group(1)
                     if not vecino in grafo['routers']  or not idrouter in grafo['routers'][vecino]:
