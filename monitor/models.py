@@ -2,7 +2,7 @@ from django.db import models
 import routeros_api
 from pathlib import Path
 from datetime import datetime
-import pickle
+import json
 
 class LSDB(models.Model):
    archivo = models.IntegerField(primary_key=True)
@@ -18,11 +18,18 @@ class LSDB(models.Model):
          connection = routeros_api.RouterOsApiPool(router.ip, username=router.usuario, password=router.password, plaintext_login=True)
          api = connection.get_api()
          lsdb = api.get_resource('/routing/ospf/lsa')
+
+         contenido = {
+            'autor': '',
+            'descripcion': '',
+            'router': router.nombre,
+            'lsdb': lsdb.get(),
+         }
          
          BASE_DIR = Path(__file__).resolve().parent.parent
-         ruta = BASE_DIR / 'lsdb' / (str(self.archivo) + '.pickle')
-         with open(ruta, 'wb') as f:
-            pickle.dump(lsdb.get(), f, pickle.HIGHEST_PROTOCOL)
+         ruta = BASE_DIR / 'lsdb' / (str(self.archivo) + '.json')
+         with open(ruta, 'w') as f:
+            json.dump(contenido, f, indent=2)
 
       super().save(*args, **kwargs)
    

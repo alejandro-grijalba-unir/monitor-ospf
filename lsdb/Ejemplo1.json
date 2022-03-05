@@ -1,0 +1,79 @@
+{
+  "autor": "",
+  "descripcion": "",
+  "router": "R1",
+  "lsdb": [
+    {
+      "id": "10.0.0.1",
+      "instance": "default",
+      "area": "backbone",
+      "type": "router",
+      "originator": "10.0.0.1",
+      "sequence-number": "0x80000003",
+      "age": "1277",
+      "checksum": "0xD23F",
+      "options": "E",
+      "body": "flags=\nlinks (type, id, data, metric)\n    Stub 192.168.4.0 255.255.255.0 10\n    Point-To-Point 10.0.0.3 10.0.2.1 10\n    Stub 10.0.2.0 255.255.255.0 10\n    Transit 10.0.1.4 10.0.1.1 10\n    Stub 10.0.0.1 255.255.255.255 10\n"
+    },
+    {
+      "id": "10.0.0.2",
+      "instance": "default",
+      "area": "backbone",
+      "type": "router",
+      "originator": "10.0.0.2",
+      "sequence-number": "0x80000004",
+      "age": "1268",
+      "checksum": "0xF767",
+      "options": "E",
+      "body": "flags=\nlinks (type, id, data, metric)\n    Stub 192.168.10.0 255.255.255.0 10\n    Transit 10.0.1.4 10.0.1.2 10\n    Stub 10.0.0.2 255.255.255.255 10\n"
+    },
+    {
+      "id": "10.0.0.3",
+      "instance": "default",
+      "area": "backbone",
+      "type": "router",
+      "originator": "10.0.0.3",
+      "sequence-number": "0x80000002",
+      "age": "1314",
+      "checksum": "0x2BAD",
+      "options": "E",
+      "body": "flags=\nlinks (type, id, data, metric)\n    Stub 192.168.11.0 255.255.255.0 10\n    Point-To-Point 10.0.0.1 10.0.2.3 10\n    Stub 10.0.2.0 255.255.255.0 10\n    Point-To-Point 10.0.0.4 10.0.5.3 10\n    Stub 10.0.5.0 255.255.255.0 10\n    Stub 10.0.0.3 255.255.255.255 10\n"
+    },
+    {
+      "id": "10.0.0.4",
+      "instance": "default",
+      "area": "backbone",
+      "type": "router",
+      "originator": "10.0.0.4",
+      "sequence-number": "0x80000003",
+      "age": "1278",
+      "checksum": "0x59C5",
+      "options": "E",
+      "body": "flags=\nlinks (type, id, data, metric)\n    Point-To-Point 10.0.0.5 10.0.6.4 10\n    Stub 10.0.6.0 255.255.255.0 10\n    Transit 10.0.1.4 10.0.1.4 10\n    Point-To-Point 10.0.0.3 10.0.5.4 10\n    Stub 10.0.5.0 255.255.255.0 10\n    Stub 10.0.0.4 255.255.255.255 10\n"
+    },
+    {
+      "id": "10.0.0.5",
+      "instance": "default",
+      "area": "backbone",
+      "type": "router",
+      "originator": "10.0.0.5",
+      "sequence-number": "0x80000002",
+      "age": "1315",
+      "checksum": "0x981D",
+      "options": "E",
+      "body": "flags=\nlinks (type, id, data, metric)\n    Point-To-Point 10.0.0.4 10.0.6.5 10\n    Stub 10.0.6.0 255.255.255.0 10\n    Stub 10.0.0.5 255.255.255.255 10\n"
+    },
+    {
+      "id": "10.0.1.4",
+      "instance": "default",
+      "area": "backbone",
+      "type": "network",
+      "originator": "10.0.0.4",
+      "sequence-number": "0x80000002",
+      "age": "1268",
+      "checksum": "0x112",
+      "options": "E",
+      "body": "netmask=255.255.255.0\n    routerId=10.0.0.4\n    routerId=10.0.0.2\n    routerId=10.0.0.1\n"
+    }
+  ]
+}

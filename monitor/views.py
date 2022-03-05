@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-import pickle
+import json
 from pathlib import Path
 from os import walk
 import re
@@ -13,10 +13,10 @@ def index(request):
     #context = {'archivo': 'hola' }
     #context = {'lsdb' : LSDB.objects.all()}
     
-    lista = glob.glob("lsdb/*.pickle")
+    lista = glob.glob("lsdb/*.json")
     archivos = []
     for archivo in lista:
-      nombre = re.sub(r'lsdb.(.*)\.pickle', r'\1', archivo)
+      nombre = re.sub(r'lsdb.(.*)\.json', r'\1', archivo)
       archivo={'nombre': nombre, 'archivo': nombre}
       archivos.append(archivo)
     context = {'lsdb' : archivos}
@@ -27,13 +27,14 @@ def index(request):
 
 def visor(request, archivo):
     BASE_DIR = Path(__file__).resolve().parent.parent
-    ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.pickle')
+    ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.json')
    
     try:
-        with open(ruta, 'rb') as f:
-            lsdb = pickle.load(f)
-    except:
-        return HttpResponse("Hubo un error al leer el archivo LSDB indicado")
+        with open(ruta, 'r') as f:
+            contenido = json.load(f)
+        lsdb = contenido['lsdb']
+    except Exception as e:
+        return HttpResponse("Hubo un error al leer el archivo LSDB indicado: " + str(e))
 
     grafo = {"routers": {}, "networks": {}}
 
