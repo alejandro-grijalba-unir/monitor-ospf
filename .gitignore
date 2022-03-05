@@ -2,6 +2,7 @@
 *.pickle
 *.ipynb
 *.kate-swp
+*.swp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
