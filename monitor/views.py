@@ -26,8 +26,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-
-def visor(request, archivo):
+def cargar(request, archivo):
     BASE_DIR = Path(__file__).resolve().parent.parent
     ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.json')
    
@@ -35,8 +34,18 @@ def visor(request, archivo):
         with open(ruta, 'r') as f:
             contenido = json.load(f)
         lsdb = contenido['lsdb']
+    except FileNotFoundError as e:
+        return HttpResponse("No existe el archivo LSDB indicado."), None, None
     except Exception as e:
-        return HttpResponse("Hubo un error al leer el archivo LSDB indicado: " + str(e))
+        return HttpResponse("Hubo un error al leer el archivo LSDB indicado.\n<br/><br/>Error: <pre>" + str(e) + "</pre>"), None, None
+
+    return None, contenido, lsdb
+
+
+def visor(request, archivo):
+    res, contenido, lsdb = cargar(request, archivo)
+    if res:
+        return res
 
     grafo = {"routers": {}, "networks": {}}
 
@@ -62,14 +71,91 @@ def visor(request, archivo):
                     vecino = match.group(1)
                     if not vecino in grafo['routers']  or not idrouter in grafo['routers'][vecino]:
                         grafo['routers'][idrouter].append(vecino)
-                        #print(idrouter2.group(1))
-                        pass
-            #print("")
             
         elif t == "network":
             idnetwork = lsa["id"]
             
             if not idnetwork in grafo['networks']:
+                grafo['networks'][idnetwork]=[]
+
+            #print("type=" + lsa['type'])
+
+            body = lsa["body"].splitlines()
+            for l in body:
+                match = re.match(r"^ *routerId=([0-9.]+)", l)
+                if match:
+                    vecino = match.group(1)
+                    grafo['networks'][idnetwork].append(vecino)
+
+    fecha = re.sub(r' .*', '', contenido['fecha'])
+
+    context = {
+        'nombre': archivo,
+        'contenido': contenido,
+        'fecha': fecha,
+        'grafo' : grafo,
+    }
+
+        
+    
+    return render(request, 'monitor/index.html', context)
+
+
+def visorestadisticas(request, archivo):
+    res, contenido, lsdb = cargar(request, archivo)
+    if res:
+        return res
+
+    grafo = {"routers": {}, "networks": {}}
+
+    num_routers = 0
+    num_ptp = 0
+    num_bcast = 0
+    num_subredes = 0
+
+    subredes = []
+
+    for lsa in lsdb:
+        t = lsa["type"]
+        
+        if t == "router":
+            num_routers = num_routers + 1
+            idrouter = lsa["id"]
+            #print(idrouter)
+            if not idrouter in grafo['routers']:
+                grafo['routers'][idrouter]=[]
+
+            #print("type=" + lsa['type'])
+
+            body = lsa["body"].splitlines()
+            for l in body:
+                # Routeros ~6.43
+                match = re.match(r"^ *link-type=Point-To-Point.* id=([0-9.]+)", l)
+                if not match:
+                    # RouterOS ~6.49
+                    match = re.match(r"^ *Point-To-Point ([0-9.]+)", l)
+                if match:
+                    vecino = match.group(1)
+                    if not vecino in grafo['routers']  or not idrouter in grafo['routers'][vecino]:
+                        num_ptp = num_ptp + 1
+                        grafo['routers'][idrouter].append(vecino)
+
+                # Routeros ~6.43
+                match = re.match(r"^ *link-type=Stub.* id=([0-9.]+)", l)
+                if not match:
+                    # RouterOS ~6.49
+                    match = re.match(r"^ *Stub ([0-9.]+)", l)
+                if match:
+                    subred = match.group(1)
+                    if not subred in subredes:
+                        subredes.append(subred)
+                        num_subredes = num_subredes + 1
+           
+        elif t == "network":
+            idnetwork = lsa["id"]
+            
+            if not idnetwork in grafo['networks']:
+                num_bcast = num_bcast + 1
                 grafo['networks'][idnetwork]=[]
 
             #print("type=" + lsa['type'])
@@ -90,16 +176,16 @@ def visor(request, archivo):
         'nombre': archivo,
         'contenido': contenido,
         'fecha': fecha,
+        'num_routers': num_routers,
+        'num_ptp': num_ptp,
+        'num_bcast': num_bcast,
+        'num_subredes': num_subredes,
         'grafo' : grafo,
     }
 
         
-    #for lsa in lsdb:
-    #  if (lsa['area'] == 'backbone'):
-    #    print(lsa['id'], lsa['type'] , lsa['originator'] , lsa['area'], lsa['body'])
     
-    return render(request, 'monitor/index.html', context)
-    
+    return render(request, 'monitor/visorestadisticas.html', context)
 
 # Generar archivo de volcado LSDB
 def generar(request):

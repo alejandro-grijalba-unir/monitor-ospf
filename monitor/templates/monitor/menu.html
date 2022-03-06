@@ -15,9 +15,21 @@
 		    Vista
 		  </a>
 		  <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+		    {% if activo == "general" %}
 		    <li><a class="dropdown-item active" href="#">General</a></li>
-		    <li><a class="dropdown-item" href="#">Estadísticas</a></li>
-		    <li><a class="dropdown-item" href="#">Análisis de duplicados</a></li>
+		    {% else %}
+		    <li><a class="dropdown-item" href="/visor/{{ nombre }}">General</a></li>
+		    {% endif %}
+		    {% if activo == "estadisticas" %}
+		    <li><a class="dropdown-item active" href="#">Estadísticas</a></li>
+		    {% else %}
+		    <li><a class="dropdown-item" href="/visorestadisticas/{{ nombre }}">Estadísticas</a></li>
+		    {% endif %}
+		    {% if activo == "analisis" %}
+		    <li><a class="dropdown-item active" href="#">Análisis de duplicados</a></li>
+		    {% else %}
+		    <li><a class="dropdown-item" href="/visorduplicados/{{ nombre }}">Análisis de duplicados</a></li>
+		    {% endif %}
 		  </ul>
 		</li>
 	      </ul>

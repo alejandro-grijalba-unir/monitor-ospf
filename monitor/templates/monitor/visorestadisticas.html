@@ -1,0 +1,43 @@
+<!doctype html>{% load static %}<html style="height: 100%">
+<head>
+	<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>-->
+	<script src="{% static 'monitor/cytoscape.min.js' %}"></script>
+	<script src="{% static 'monitor/cytoscape-cose-bilkent.js' %}"></script>
+	<link href="{% static 'monitor/bootstrap-5.1.0-dist/css/bootstrap.min.css' %}" rel="stylesheet" crossorigin="anonymous"></link>
+	<script src="{% static 'monitor/bootstrap-5.1.0-dist/js/bootstrap.bundle.min.js' %}" crossorigin="anonymous"></script>
+	<!--	<script src="{% static 'monitor/cytoscape-avsdf.js' %}"></script> -->
+
+</head>
+<body style="height: 100%; margin: 0;">
+
+	<div class="container-fluid vh-100 d-flex flex-column">
+
+
+	{% include "monitor/menu.html" with activo="estadisticas" buscar=False %}
+
+	<table class="table">
+  <tbody>
+    <tr>
+      <th class="" scope="row">Fecha:</th>
+      <td class="">{{ contenido.fecha }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Número de routers</th>
+      <td>{{ num_routers }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Número de redes OSPF punto a punto</th>
+      <td>{{ num_ptp }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Número de redes OSPF broadcast</th>
+      <td>{{ num_bcast }}</td>
+    </tr>
+    <tr>
+      <th scope="row">Número de subredes</th>
+      <td>{{ num_subredes }}</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
