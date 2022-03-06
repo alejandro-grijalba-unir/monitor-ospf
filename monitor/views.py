@@ -7,13 +7,11 @@ import re
 import glob
 import routeros_api
 from datetime import datetime
+from ipaddress import IPv4Network, IPv4Address
 
 from .models import Router
 
 def index(request):
-    #return HttpResponse("Hello, world. You're at the polls index.")
-    #context = {'archivo': 'hola' }
-    #context = {'lsdb' : LSDB.objects.all()}
     
     lista = glob.glob("lsdb/*.json")
     archivos = []
@@ -22,7 +20,8 @@ def index(request):
       archivo={'nombre': nombre, 'archivo': nombre}
       archivos.append(archivo)
     context = {'lsdb' : archivos}
-    print(context)
+
+    #print(context)
     return render(request, 'index.html', context)
 
 
@@ -47,19 +46,25 @@ def visor(request, archivo):
     if res:
         return res
 
+    # El grafo a dibujar
+    #  Cada router contiene una lista de routers vecinos
+    #  Cada red boradcast contiene una lista de routers vecinos
     grafo = {"routers": {}, "networks": {}}
+    
 
+    # Analizar cada entrada LSA
     for lsa in lsdb:
         t = lsa["type"]
         
+        # LSA de tipo ROUTER
         if t == "router":
             idrouter = lsa["id"]
-            #print(idrouter)
+
+            # Añadir el router a la lista si no estaba
             if not idrouter in grafo['routers']:
                 grafo['routers'][idrouter]=[]
 
-            #print("type=" + lsa['type'])
-
+            # Analizar el cuerpo del LSA
             body = lsa["body"].splitlines()
             for l in body:
                 # Routeros ~6.43
@@ -69,21 +74,25 @@ def visor(request, archivo):
                     match = re.match(r"^ *Point-To-Point ([0-9.]+)", l)
                 if match:
                     vecino = match.group(1)
+                    # Añadir vecino (ptp) si no se ha añadido antes
                     if not vecino in grafo['routers']  or not idrouter in grafo['routers'][vecino]:
                         grafo['routers'][idrouter].append(vecino)
-            
+
+        # LSA de tipo NETWORK
         elif t == "network":
             idnetwork = lsa["id"]
-            
+           
+            # Añadir la red al grafo como un nodo
             if not idnetwork in grafo['networks']:
                 grafo['networks'][idnetwork]=[]
 
-            #print("type=" + lsa['type'])
 
+            # Analizar el cuerpo del LSA
             body = lsa["body"].splitlines()
             for l in body:
                 match = re.match(r"^ *routerId=([0-9.]+)", l)
                 if match:
+                    # Añadir el router vecino
                     vecino = match.group(1)
                     grafo['networks'][idnetwork].append(vecino)
 
@@ -95,8 +104,6 @@ def visor(request, archivo):
         'fecha': fecha,
         'grafo' : grafo,
     }
-
-        
     
     return render(request, 'monitor/index.html', context)
 
@@ -114,63 +121,85 @@ def visorestadisticas(request, archivo):
     num_subredes = 0
 
     subredes = []
+    vecinos = []
 
+    # Analizar cada entrada LSA
     for lsa in lsdb:
         t = lsa["type"]
         
+        # LSA de tipo ROUTER
         if t == "router":
             num_routers = num_routers + 1
             idrouter = lsa["id"]
-            #print(idrouter)
+
+            # Añadir el router a la lista si no estaba
             if not idrouter in grafo['routers']:
                 grafo['routers'][idrouter]=[]
 
-            #print("type=" + lsa['type'])
-
+            # Analizar el cuerpo del LSA
             body = lsa["body"].splitlines()
             for l in body:
                 # Routeros ~6.43
-                match = re.match(r"^ *link-type=Point-To-Point.* id=([0-9.]+)", l)
+                match = re.match(r"^ *link-type=Point-To-Point.* id=([0-9.]+) data=([0-9.]+)", l)
                 if not match:
                     # RouterOS ~6.49
-                    match = re.match(r"^ *Point-To-Point ([0-9.]+)", l)
+                    match = re.match(r"^ *Point-To-Point ([0-9.]+) ([0-9.]+)", l)
                 if match:
                     vecino = match.group(1)
+                    vecinos.append(match.group(2))
+                    # Añadir vecino (ptp) si no se ha añadido antes
                     if not vecino in grafo['routers']  or not idrouter in grafo['routers'][vecino]:
                         num_ptp = num_ptp + 1
                         grafo['routers'][idrouter].append(vecino)
 
                 # Routeros ~6.43
-                match = re.match(r"^ *link-type=Stub.* id=([0-9.]+)", l)
+                match = re.match(r"^ *link-type=Stub.* id=([0-9.]+) data=([0-9.]+)", l)
                 if not match:
                     # RouterOS ~6.49
-                    match = re.match(r"^ *Stub ([0-9.]+)", l)
+                    match = re.match(r"^ *Stub ([0-9.]+) ([0-9.]+)", l)
                 if match:
-                    subred = match.group(1)
-                    if not subred in subredes:
-                        subredes.append(subred)
-                        num_subredes = num_subredes + 1
+                    mascara = match.group(2)
+                    prefijo = IPv4Network('0.0.0.0/' + mascara).prefixlen
+                    subred = match.group(1) + "/" + str(prefijo)
+                    #if not subred in subredes:
+                    subredes.append(subred)
+                    #num_subredes = num_subredes + 1
            
+        # LSA de tipo NETWORK
         elif t == "network":
             idnetwork = lsa["id"]
             
+            # Añadir la red al grafo como un nodo
             if not idnetwork in grafo['networks']:
                 num_bcast = num_bcast + 1
                 grafo['networks'][idnetwork]=[]
 
-            #print("type=" + lsa['type'])
 
+            # Analizar el cuerpo del LSA
             body = lsa["body"].splitlines()
             for l in body:
                 match = re.match(r"^ *routerId=([0-9.]+)", l)
                 if match:
                     vecino = match.group(1)
                     grafo['networks'][idnetwork].append(vecino)
-                    #print(l)
-                    pass
-            #print("")
 
     fecha = re.sub(r' .*', '', contenido['fecha'])
+
+    # Buscar redes duplicadas
+    #  1. No tener en cuenta las redes ptp
+    for vecino in vecinos:
+        for subred in subredes:
+            if IPv4Network(vecino + '/32').subnet_of(IPv4Network(subred)):
+                subredes.remove(subred)
+
+    num_subredes = len(subredes)
+
+    duplicados = []
+    #  2. Ver si hay duplicados
+    for i in range(0,len(subredes)):
+        for j in range(i+1, len(subredes)):
+            if IPv4Network(subredes[i]).subnet_of(IPv4Network(subredes[j])):
+                duplicados.append(subredes[i])
 
     context = {
         'nombre': archivo,
@@ -180,10 +209,9 @@ def visorestadisticas(request, archivo):
         'num_ptp': num_ptp,
         'num_bcast': num_bcast,
         'num_subredes': num_subredes,
+        'duplicados': duplicados,
         'grafo' : grafo,
     }
-
-        
     
     return render(request, 'monitor/visorestadisticas.html', context)
 

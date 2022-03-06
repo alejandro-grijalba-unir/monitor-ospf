@@ -21,14 +21,9 @@
 		    <li><a class="dropdown-item" href="/visor/{{ nombre }}">General</a></li>
 		    {% endif %}
 		    {% if activo == "estadisticas" %}
-		    <li><a class="dropdown-item active" href="#">Estadísticas</a></li>
+		    <li><a class="dropdown-item active" href="#">Analizar red</a></li>
 		    {% else %}
-		    <li><a class="dropdown-item" href="/visorestadisticas/{{ nombre }}">Estadísticas</a></li>
-		    {% endif %}
-		    {% if activo == "analisis" %}
-		    <li><a class="dropdown-item active" href="#">Análisis de duplicados</a></li>
-		    {% else %}
-		    <li><a class="dropdown-item" href="/visorduplicados/{{ nombre }}">Análisis de duplicados</a></li>
+		    <li><a class="dropdown-item" href="/visorestadisticas/{{ nombre }}">Analizar red</a></li>
 		    {% endif %}
 		  </ul>
 		</li>

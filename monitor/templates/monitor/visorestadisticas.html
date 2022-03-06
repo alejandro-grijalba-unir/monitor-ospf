@@ -37,6 +37,17 @@
       <th scope="row">Número de subredes</th>
       <td>{{ num_subredes }}</td>
     </tr>
+    <tr>
+      <th scope="row">Redes duplicadas o solapadas</th>
+      <td> {% if duplicados|length > 0 %}
+	   	{% for dup in duplicados %}
+	      		{{ dup }},
+	   	{% endfor %}
+	   {% else %}
+	       Ninguna
+	   {% endif %}
+      </td>
+    </tr>
   </tbody>
 </table>
 
