@@ -6,6 +6,7 @@ from os import walk
 import re
 import glob
 import routeros_api
+from datetime import datetime
 
 from .models import Router
 
@@ -83,10 +84,12 @@ def visor(request, archivo):
                     pass
             #print("")
 
-   
+    fecha = re.sub(r' .*', '', contenido['fecha'])
 
     context = {
         'nombre': archivo,
+        'contenido': contenido,
+        'fecha': fecha,
         'grafo' : grafo,
     }
 
@@ -110,9 +113,10 @@ def generar(request):
          lsdb = api.get_resource('/routing/ospf/lsa')
 
          contenido = {
-            'autor': '',
+            'autor': request.user.username,
             'descripcion': '',
             'router': router.nombre,
+            'fecha': datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S (%Z)"),
             'lsdb': lsdb.get(),
          }
          

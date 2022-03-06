@@ -6,12 +6,14 @@
 	<link href="{% static 'monitor/bootstrap-5.1.0-dist/css/bootstrap.min.css' %}" rel="stylesheet" crossorigin="anonymous"></link>
 	<script src="{% static 'monitor/bootstrap-5.1.0-dist/js/bootstrap.bundle.min.js' %}" crossorigin="anonymous"></script>
 	<!--	<script src="{% static 'monitor/cytoscape-avsdf.js' %}"></script> -->
-	<!--<script src="{% static 'monitor/springy.js' %}"></script>
-	<script src="{% static 'monitor/springyui.js' %}"></script>-->
+
 </head>
 <body style="height: 100%; margin: 0;">
-<div class="container-fluid vh-100 d-flex flex-column">
 
+	<div class="container-fluid vh-100 d-flex flex-column">
+
+
+	<!-- INICIO NAVEGACION -->
 	<nav class="navbar navbar-expand-lg navbar-light bg-light">
 	  <div class="container-fluid">
 	    <a class="navbar-brand" href="/">Inicio</a>
@@ -21,14 +23,14 @@
 	    <div class="collapse navbar-collapse" id="navbarNavDropdown">
 	      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 		<li class="nav-item">
-		  <div class="nav-link me-auto" >Archivo: {{ nombre }} ({{ fecha }}) </div>
+		  <div class="nav-link me-auto" >Archivo: {{ nombre }}</div>
 		</li>
 		<li class="nav-item dropdown">
 		  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 		    Vista
 		  </a>
 		  <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-		    <li><a class="dropdown-item" href="#">General</a></li>
+		    <li><a class="dropdown-item active" href="#">General</a></li>
 		    <li><a class="dropdown-item" href="#">Estadísticas</a></li>
 		    <li><a class="dropdown-item" href="#">Análisis de duplicados</a></li>
 		  </ul>
@@ -41,227 +43,155 @@
 	    </div>
 	  </div>
 	</nav>
-	<!--
-	<div class="nav-link me-auto" style="padding-left: 1em">Archivo: {{ nombre }} ({{ fecha }}) </div>
 
-            <form class="d-flex my-2 my-lg-0">
-                <input id="busca" class="form-control me-sm-2" type="search" placeholder="Equipo" aria-label="Buscar">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
-	-->
-
-<div id="top"></div>
-
-<script>
-var ultimaBusqueda="";
-
-function buscar() {
-    if ( document.getElementById('busca').value != ultimaBusqueda ) {
-        ultimaBusqueda = document.getElementById('busca').value;
-        cy.$('').each(function(ele) {
-        
-        
-            var ident = ele.data('id');
-            if (ident.includes(ultimaBusqueda) && ultimaBusqueda != "")
-                ele.css('background-color','#f88')
-            else
-                ele.css('background-color','')
-            
-            //console.log($(this)))
-        })
-    }
-}
-
-document.getElementById('busca').addEventListener('keyup', buscar);
-document.getElementById('busca').addEventListener('change', buscar);
-</script>
+	<script>
+		const navLinks = document.querySelectorAll('.nav-item')
+		const menuToggle = document.getElementById('navbarSupportedContent')
+		const bsCollapse = new bootstrap.Collapse(menuToggle, {toggle:false})
+		navLinks.forEach((l) => {
+		    l.addEventListener('click', () => { bsCollapse.toggle() })
+		})
+	</script>
+	<!-- FIN NAV -->
 
 
-<!--
-<a href="/">Volver</a>
-<hr style="width: 99%; margin: 0; padding: 0"/>
-Analizando: {{ nombre }}
-<hr style="width: 100%"/>
--->
+	<!-- INICIO SCRIPT BUSQUEDA -->
+	<script>
+		var ultimaBusqueda="";
 
-<div class="row flex-grow-1" xstyle="display: flex; flex-shrink: 10; xheight: calc( 100% - 6px ); flex 1 1 auto">
- <div id="cy" style="nodisplay: flex; width: 100%; height: 100%; noflex: 1 1 auto"></div>
- <!-- <canvas id="springydemo" width="1500" height="1000" /> -->
- </div>
-</div>
-</div>
+		function buscar() {
+		    if ( document.getElementById('busca').value != ultimaBusqueda ) {
+			ultimaBusqueda = document.getElementById('busca').value;
+			cy.$('').each(function(ele) {
+			
+			
+			    var ident = ele.data('id');
+			    if (ident.includes(ultimaBusqueda) && ultimaBusqueda != "")
+				ele.css('background-color','#f88')
+			    else
+				ele.css('background-color','')
+			    
+			    //console.log($(this)))
+			})
+		    }
+		}
 
-<script>
-var i=0;
-var config = {
-    container: document.getElementById('cy'),
-    elements: [
-                
-
-    // Dibujar los nodos de routers
-    {% for router in grafo.routers %}
-        {
-            data: {
-                id:  '{{ router }}',
-                
-                numero: 'R_' + i++,
-                type: 'router',
-                
-            }
-        },
-    {% endfor %}
+		document.getElementById('busca').addEventListener('keyup', buscar);
+		document.getElementById('busca').addEventListener('change', buscar);
+	</script>
+	<!-- FIN SCRIPT BUSQUEDA -->
 
 
-    // Dibujar las aristas de adyacencias ptp de routers
-    {% for router, vecinos in grafo.routers.items %}
-        {% for vecino in vecinos %}
-            {
-                data: {
-                    id: '{{ router }}_{{ vecino }}',
-                    source: '{{ router }}',
-                    target: '{{ vecino }}',
-                }
-            },
-                
-        {% endfor %}
-    {% endfor %}
+	<!-- INICIO CYTOSCAPE -->
+	<div class="row flex-grow-1" xstyle="display: flex; flex-shrink: 10; xheight: calc( 100% - 6px ); flex 1 1 auto">
+	 <div id="cy" style="nodisplay: flex; width: 100%; height: 100%; noflex: 1 1 auto"></div>
+	 </div>
+	</div>
+	</div>
+
+	<script>
+		var i=0;
+		var config = {
+		    container: document.getElementById('cy'),
+		    elements: [
+				
+
+		    // Dibujar los nodos de routers
+		    {% for router in grafo.routers %}
+			{
+			    data: {
+				id:  '{{ router }}',
+				
+				numero: 'R_' + i++,
+				type: 'router',
+				
+			    }
+			},
+		    {% endfor %}
 
 
-    // Dibujar los nodos de redes broadcast/NBMA
-    {% for network in grafo.networks %}
-        {
-            data: {
-                id:  'N_{{ network }}',
-                type: 'network'
-            }
-            
-        },
-    {% endfor %}
-
-    // Dibujar las aristas de redes
-    {% for network, vecinos in grafo.networks.items %}
-        {% for vecino in vecinos %}
-            {
-                data: {
-                    source:  'N_{{ network }}',
-                    target: '{{ vecino }}',
-                }
-            },
-        {% endfor %}
-    {% endfor %}
+		    // Dibujar las aristas de adyacencias ptp de routers
+		    {% for router, vecinos in grafo.routers.items %}
+			{% for vecino in vecinos %}
+			    {
+				data: {
+				    id: '{{ router }}_{{ vecino }}',
+				    source: '{{ router }}',
+				    target: '{{ vecino }}',
+				}
+			    },
+				
+			{% endfor %}
+		    {% endfor %}
 
 
-    ],
-    
-    // Opciones
-    layout: {
-        name: 'cose-bilkent',
-	randomize: false,
-        nodeDimensionsIncludeLabels: true,
-        quality: 'proof',
-        padding: 40,
-        numIter: 10000,
-        idealEdgeLength: 100,
-	    /*
-        nodeRepulsion: 4000,
-        xedgeElasticity: 0.9,
-        xnestingFactor: 0.8,
-        xgravityRange: 10.0,
-	    */
-    },
-    style: [
-        {
-            selector: 'node',
-            style: {
-                'content': 'data(id)',
-                'labelValign': 'middle',
-                "text-valign" : "center",
-                "text-halign" : "center",
-                'width': 'label',
-                'height': 'label',
-                'padding': '0.2em',
-            }
-        },
-        {
-            selector: 'node[type="router"]',
-            style: {
-                'shape': 'square',
-                'background-color': '#88f',
-                'labelValign': 'middle',
-            }
-        },
-    ]
-};
-cy = cytoscape(config);
+		    // Dibujar los nodos de redes broadcast/NBMA
+		    {% for network in grafo.networks %}
+			{
+			    data: {
+				id:  'N_{{ network }}',
+				type: 'network'
+			    }
+			    
+			},
+		    {% endfor %}
+
+		    // Dibujar las aristas de redes
+		    {% for network, vecinos in grafo.networks.items %}
+			{% for vecino in vecinos %}
+			    {
+				data: {
+				    source:  'N_{{ network }}',
+				    target: '{{ vecino }}',
+				}
+			    },
+			{% endfor %}
+		    {% endfor %}
 
 
-/*
-var graph = new Springy.Graph();
+		    ],
+		    
+		    // Opciones
+		    layout: {
+			name: 'cose-bilkent',
+			randomize: false,
+			nodeDimensionsIncludeLabels: true,
+			quality: 'proof',
+			padding: 40,
+			numIter: 10000,
+			idealEdgeLength: 100,
+			    /*
+			nodeRepulsion: 4000,
+			xedgeElasticity: 0.9,
+			xnestingFactor: 0.8,
+			xgravityRange: 10.0,
+			    */
+		    },
+		    style: [
+			{
+			    selector: 'node',
+			    style: {
+				'content': 'data(id)',
+				'labelValign': 'middle',
+				"text-valign" : "center",
+				"text-halign" : "center",
+				'width': 'label',
+				'height': 'label',
+				'padding': '0.2em',
+			    }
+			},
+			{
+			    selector: 'node[type="router"]',
+			    style: {
+				'shape': 'square',
+				'background-color': '#88f',
+				'labelValign': 'middle',
+			    }
+			},
+		    ]
+		};
+		cy = cytoscape(config);
+	</script>
+	<!-- FIN CYTOSCAPE -->
 
-graph.addNodes(
-    // Dibujar los nodos de routers
-    {% for router in grafo.routers %}
-                '{{ router }}',
-    {% endfor %}
-
-    // Dibujar los nodos de redes broadcast/NBMA
-    {% for network in grafo.networks %}
-      'N_{{ network }}',
-    {% endfor %}
-)
-
-graph.addEdges(
-    // Dibujar las aristas de adyacencias ptp de routers
-    {% for router, vecinos in grafo.routers.items %}
-        {% for vecino in vecinos %}
-               [   '{{ router }}', '{{ vecino }}' ],
-        {% endfor %}
-    {% endfor %}
-
-
-
-    // Dibujar las aristas de redes
-    {% for network, vecinos in grafo.networks.items %}
-        {% for vecino in vecinos %}
-               [   'N_{{ network }}', '{{ vecino }}' ],
-        {% endfor %}
-    {% endfor %}
-);
-*/
-
-/*
-graph.addNodes('Dennis', 'Michael', 'Jessica', 'Timothy', 'Barbara')
-graph.addNodes('Amphitryon', 'Alcmene', 'Iphicles', 'Heracles');
-
-graph.addEdges(
-  ['Dennis', 'Michael', {color: '#00A0B0', label: 'Foo bar'}],
-  ['Michael', 'Dennis', {color: '#6A4A3C'}],
-  ['Michael', 'Jessica', {color: '#CC333F'}],
-  ['Jessica', 'Barbara', {color: '#EB6841'}],
-  ['Michael', 'Timothy', {color: '#EDC951'}],
-  ['Amphitryon', 'Alcmene', {color: '#7DBE3C'}],
-  ['Alcmene', 'Amphitryon', {color: '#BE7D3C'}],
-  ['Amphitryon', 'Iphicles'],
-  ['Amphitryon', 'Heracles'],
-  ['Barbara', 'Timothy', {color: '#6A4A3C'}]
-);
-*/
-
-/*
-jQuery(function(){
-  var springy = jQuery('#springydemo').springy({
-    graph: graph
-  });
-});
-*/
-</script>
-
-<script>
-const navLinks = document.querySelectorAll('.nav-item')
-const menuToggle = document.getElementById('navbarSupportedContent')
-const bsCollapse = new bootstrap.Collapse(menuToggle, {toggle:false})
-navLinks.forEach((l) => {
-    l.addEventListener('click', () => { bsCollapse.toggle() })
-})
-</script>
 </body>
