@@ -17,7 +17,12 @@ def index(request):
     archivos = []
     for archivo in lista:
       nombre = re.sub(r'lsdb.(.*)\.json', r'\1', archivo)
-      archivo={'nombre': nombre, 'archivo': nombre}
+      res, contenido, lsdb = cargar(request, nombre)
+      if contenido and 'fecha' in contenido:
+          fecha = contenido['fecha']
+      else:
+          fecha=""
+      archivo={'nombre': nombre, 'archivo': nombre, 'fecha': fecha}
       archivos.append(archivo)
     context = {'lsdb' : archivos}
 
