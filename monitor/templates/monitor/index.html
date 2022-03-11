@@ -229,6 +229,10 @@
 		    //node.css({'content': node.attr('subredes')});
 		    node.css({'content': etiqueta});
 		    node.css({'text-wrap': 'wrap'});
+		    node.css({'z-index': '9999'});
+		    node.css({'border-style': 'solid'});
+		    node.css({'border-color': 'black'});
+		    node.css({'border-width': '2px'});
 		});
 
 		// Evento mouseout
@@ -237,6 +241,8 @@
 			    setTimeout(function() {
 				    // Restaurar etiqueta del nodo
 				    node.css({'content': ''});
+		    		    node.css({'z-index': ''});
+		    		    node.css({'border-width': '0'});
 			    }, 200);
 		});
 
