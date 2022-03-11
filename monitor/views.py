@@ -13,7 +13,8 @@ import os.path
 from .models import Router
 
 def index(request):
-    
+   
+    # Listar archivos
     lista = glob.glob("lsdb/*.json")
     lista.sort()
     archivos = []
@@ -222,24 +223,48 @@ def visorestadisticas(request, archivo):
     
     return render(request, 'monitor/visorestadisticas.html', context)
 
-# Generar archivo de volcado LSDB
+
+# Vista para la generacion de una instantanea
 def generar(request):
+    context = { 
+            'routers': Router.objects.all()
+    }
+    return render(request, 'monitor/generar.html', context)
+
+
+# Generar archivo de volcado LSDB
+def generar_post(request):
    if request.POST:
          archivo_original = request.POST['nombre']
          archivo = re.sub(r'[^A-Za-z0-9]+', '_', archivo_original)
+
+         # Comprobar ruta vacia
+         if len(archivo) < 1:
+             return HttpResponse("Error! Debe especificar un nombre de archivo<br/><br/><a href='#' onclick='history.back()'>Volver</a>")
      
          BASE_DIR = Path(__file__).resolve().parent.parent
          ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.json')
 
+         # Comprobar ruta
          if os.path.exists(ruta):
-             return HttpResponse("Error! El archivo " + archivo + " ya existe<br/><br/><a href='/'>Inicio</a>")
+             return HttpResponse("Error! El archivo " + archivo + " ya existe<br/><br/><a href='#' onclick='history.back()'>Volver</a>")
+
+      
+         # Comprobar router
+         try:
+            router = Router.objects.get(pk=int(request.POST['router']))
+         except Router.DoesNotExist:
+             return HttpResponse("Error! Debe seleccionar un router válido<br/><br/><a href='#' onclick='history.back()'>Volver</a>")
 
 
-         # TODO: Elegir router
-         router = Router.objects.first()
-         connection = routeros_api.RouterOsApiPool(router.ip, username=router.usuario, password=router.password, plaintext_login=True)
-         api = connection.get_api()
-         lsdb = api.get_resource('/routing/ospf/lsa')
+         # Generar instantanea
+         try:
+             connection = routeros_api.RouterOsApiPool(router.ip, username=router.usuario, password=router.password, plaintext_login=True)
+             api = connection.get_api()
+             lsdb = api.get_resource('/routing/ospf/lsa')
+         except Exception as e:
+             return HttpResponse("Error! Hubo un error al intentar generar la instantanea: <pre>"+ str(e) +"</pre><br/><br/><a href='#' onclick='history.back()'>Volver</a>")
+
 
          contenido = {
             'autor': request.user.username,
@@ -254,5 +279,5 @@ def generar(request):
             json.dump(contenido, f, indent=2)
 
 
-         return HttpResponse("Generando archivo LSDB " + archivo + "<br/><br/><a href='/'>Inicio</a>")
+         return HttpResponse("Generado archivo LSDB " + archivo + "<br/><br/><a href='/'>Inicio</a>")
       

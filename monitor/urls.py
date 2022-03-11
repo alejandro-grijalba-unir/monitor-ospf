@@ -9,4 +9,5 @@ urlpatterns = [
     path('visor/<str:archivo>', views.visor, name='visor'),
     path('visorestadisticas/<str:archivo>', views.visorestadisticas, name='visorestadisticas'),
     path('generar', views.generar, name='generar'),
+    path('generar_post', views.generar_post, name='generar_post'),
 ]

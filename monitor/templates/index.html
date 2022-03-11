@@ -8,21 +8,8 @@
 
 <main class="container">
 
-{% include "monitor/menu.html" with activo="general" buscar=False %}
+{% include "monitor/menu.html" with activo="general" generar=True %}
 
-  <div class="my-3 p-3 bg-body rounded shadow-sm">
-    <h6 class="border-bottom pb-2 mb-0">Generar instantánea nueva</h6>
-    <div class="d-flex text-muted pt-3">
-
-      <p class="pb-3 mb-0 small lh-sm border-bottom">
-	 <form action="/generar" method="post">
-	  {% csrf_token %}
-	  <label for="nombre">Nombre:</label> <input type="text" id="nombre" name="nombre"></input>
-	  <input type="submit" value="Generar"></input>
-	 </form>
-      </p>
-    </div>
-  </div>
 
 
   <div class="my-3 p-3 bg-body rounded shadow-sm">
