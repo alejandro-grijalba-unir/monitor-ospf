@@ -9,7 +9,7 @@ Ha sido desarrollada como un Trabajo de Fin de Grado para el Grado en Informáti
 
 ## Instalacion
 
-Requiere de Python 3.6 y Django 3.2.
+Requiere de Python 3.7 y Django 3.2.
 
 ```
 git clone https://github.com/alejandro-grijalba-unir/monitor-ospf.git
