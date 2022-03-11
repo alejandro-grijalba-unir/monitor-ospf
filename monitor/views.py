@@ -56,8 +56,11 @@ def visor(request, archivo):
 
     # El grafo a dibujar
     #  Cada router contiene una lista de routers vecinos
-    #  Cada red boradcast contiene una lista de routers vecinos
-    grafo = {"routers": {}, "networks": {}}
+    #  Cada red broadcast contiene una lista de routers vecinos
+    grafo = {
+                "routers": {},
+                "networks": {},
+    }
     
 
     # Analizar cada entrada LSA
@@ -70,11 +73,12 @@ def visor(request, archivo):
 
             # Añadir el router a la lista si no estaba
             if not idrouter in grafo['routers']:
-                grafo['routers'][idrouter]=[]
+                grafo['routers'][idrouter]={'vecinos':[], 'subredes':[]}
 
             # Analizar el cuerpo del LSA
             body = lsa["body"].splitlines()
             for l in body:
+                # Link PTP
                 # Routeros ~6.43
                 match = re.match(r"^ *link-type=Point-To-Point.* id=([0-9.]+)", l)
                 if not match:
@@ -84,7 +88,19 @@ def visor(request, archivo):
                     vecino = match.group(1)
                     # Añadir vecino (ptp) si no se ha añadido antes
                     if not vecino in grafo['routers']  or not idrouter in grafo['routers'][vecino]:
-                        grafo['routers'][idrouter].append(vecino)
+                        grafo['routers'][idrouter]['vecinos'].append(vecino)
+
+                # Link STUB
+                # Routeros ~6.43
+                match = re.match(r"^ *link-type=Stub.* id=([0-9.]+) data=([0-9.]+)", l)
+                if not match:
+                    # RouterOS ~6.49
+                    match = re.match(r"^ *Stub ([0-9.]+) ([0-9.]+)", l)
+                if match:
+                    mascara = match.group(2)
+                    prefijo = IPv4Network('0.0.0.0/' + mascara).prefixlen
+                    subred = match.group(1) + "/" + str(prefijo)
+                    grafo['routers'][idrouter]['subredes'].append(subred)
 
         # LSA de tipo NETWORK
         elif t == "network":
@@ -92,7 +108,7 @@ def visor(request, archivo):
            
             # Añadir la red al grafo como un nodo
             if not idnetwork in grafo['networks']:
-                grafo['networks'][idnetwork]=[]
+                grafo['networks'][idnetwork]={'vecinos':[]}
 
 
             # Analizar el cuerpo del LSA
@@ -102,7 +118,7 @@ def visor(request, archivo):
                 if match:
                     # Añadir el router vecino
                     vecino = match.group(1)
-                    grafo['networks'][idnetwork].append(vecino)
+                    grafo['networks'][idnetwork]['vecinos'].append(vecino)
 
     fecha = re.sub(r' .*', '', contenido['fecha'])
 
@@ -147,6 +163,7 @@ def visorestadisticas(request, archivo):
             # Analizar el cuerpo del LSA
             body = lsa["body"].splitlines()
             for l in body:
+                # Link PTP
                 # Routeros ~6.43
                 match = re.match(r"^ *link-type=Point-To-Point.* id=([0-9.]+) data=([0-9.]+)", l)
                 if not match:
@@ -160,6 +177,7 @@ def visorestadisticas(request, archivo):
                         num_ptp = num_ptp + 1
                         grafo['routers'][idrouter].append(vecino)
 
+                # Link STUB
                 # Routeros ~6.43
                 match = re.match(r"^ *link-type=Stub.* id=([0-9.]+) data=([0-9.]+)", l)
                 if not match:

@@ -20,14 +20,69 @@
 	<script>
 		var ultimaBusqueda="";
 
+		// Convierte una IP en un numero entre 0 y 2**32
+		function IPaNumero(ip) {
+			var octetos=ip.match(/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+
+			// devolver cada octeto multiplicado por la potencia de 2 correspondiente
+			return (
+				octetos[1] * 2**24 +
+				octetos[2] * 2**16 +
+				octetos[3] * 2**8 +
+				octetos[4] * 2**0 
+			);
+		}
+
+		// Calcula la direccion de broadcast de una red, que es la ultima ip del rango.
+                function calculaBroadcast(red, mascara) {
+                        return IPaNumero(red) + 2**("32"-mascara) - 1;
+                }
+
+
+		// Determina si una IP pertenece a un rango
+                function IPenRango(ip, rango) {
+		    // Dividir el rango en la red y la mascara
+                    var octetosMascara=rango.match(/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)\/([0-9]+)/);
+                    var red=octetosMascara[1] + "." + octetosMascara[2] + "." + octetosMascara[3] + "." + octetosMascara[4];
+                    var mascara=octetosMascara[5];
+                   
+		    // La IP pertenece si es mayor o igual que la primera ip, y menor o igual que la ultima ip
+                    return (
+                        IPaNumero(ip) >= IPaNumero(rango)
+                        &&
+                        IPaNumero(ip) <= calculaBroadcast(red, mascara)
+                    )
+                }
+
 		function buscar() {
 		    if ( document.getElementById('busca').value != ultimaBusqueda ) {
 			ultimaBusqueda = document.getElementById('busca').value;
 			cy.$('').each(function(ele) {
 			
 			
-			    var ident = ele.data('id');
-			    if (ident.includes(ultimaBusqueda) && ultimaBusqueda != "")
+			    var encontrado=false;
+			    if (ultimaBusqueda != "") {
+				    // Comprobar si la busqueda coincide con el ID del router
+				    var ident = ele.data('id');
+				    if (ident.includes(ultimaBusqueda))
+					encontrado=true;
+
+				    // Comprobar subredes
+				    var subredes = ele.data('subredes');
+				    if (subredes)
+					    subredes.forEach(function(subred) {
+						    // Busqueda por subcadena
+						    if (subred.includes(ultimaBusqueda))
+							encontrado=true;
+						    try {
+							    // Busqueda por pertenencia a rango
+							    if (IPenRango(ultimaBusqueda, subred))
+								encontrado=true;
+						    } catch {}
+					    })
+			    } 
+
+			    if (encontrado)
 				ele.css('background-color','#f88')
 			    else
 				ele.css('background-color','')
@@ -58,22 +113,28 @@
 				
 
 		    // Dibujar los nodos de routers
-		    {% for router in grafo.routers %}
+		    {% for router, atributos in grafo.routers.items %}
 			{
 			    data: {
 				id:  '{{ router }}',
 				
 				numero: 'R_' + i++,
 				type: 'router',
+			    	subredes: [
+					{% for subred in atributos.subredes %}
+					'{{ subred }}',
+					{% endfor %}
+				],
 				
-			    }
+			    }, 
 			},
 		    {% endfor %}
 
 
 		    // Dibujar las aristas de adyacencias ptp de routers
-		    {% for router, vecinos in grafo.routers.items %}
-			{% for vecino in vecinos %}
+		    {% for router, atributos in grafo.routers.items %}
+					    // {{ router }}
+			{% for vecino in atributos.vecinos %}
 			    {
 				data: {
 				    id: '{{ router }}_{{ vecino }}',
@@ -98,8 +159,8 @@
 		    {% endfor %}
 
 		    // Dibujar las aristas de redes
-		    {% for network, vecinos in grafo.networks.items %}
-			{% for vecino in vecinos %}
+		    {% for network, atributos in grafo.networks.items %}
+			{% for vecino in atributos.vecinos %}
 			    {
 				data: {
 				    source:  'N_{{ network }}',
@@ -152,6 +213,33 @@
 		    ]
 		};
 		cy = cytoscape(config);
+
+		// Evento mouseover
+		cy.on('mouseover', 'node', function (event) {
+		    var node = event.target;
+		    //console.log(node.id());
+
+		    // Añadir todas las subredes del router a su etiqueta
+		    etiqueta = node.id() + "\n\n" ;
+		    var subredes=node.attr('subredes');
+		    if (subredes)
+			    subredes.forEach(function(e) {
+				etiqueta += e + "\n"
+			    })
+		    //node.css({'content': node.attr('subredes')});
+		    node.css({'content': etiqueta});
+		    node.css({'text-wrap': 'wrap'});
+		});
+
+		// Evento mouseout
+		cy.on('mouseout', 'node', function (event) {
+			    var node = event.target;
+			    setTimeout(function() {
+				    // Restaurar etiqueta del nodo
+				    node.css({'content': ''});
+			    }, 200);
+		});
+
 	</script>
 	<!-- FIN CYTOSCAPE -->
 
