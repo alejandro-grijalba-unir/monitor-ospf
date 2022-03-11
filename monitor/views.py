@@ -8,12 +8,14 @@ import glob
 import routeros_api
 from datetime import datetime
 from ipaddress import IPv4Network, IPv4Address
+import os.path
 
 from .models import Router
 
 def index(request):
     
     lista = glob.glob("lsdb/*.json")
+    lista.sort()
     archivos = []
     for archivo in lista:
       nombre = re.sub(r'lsdb.(.*)\.json', r'\1', archivo)
@@ -223,8 +225,16 @@ def visorestadisticas(request, archivo):
 # Generar archivo de volcado LSDB
 def generar(request):
    if request.POST:
-         archivo = request.POST['nombre']
+         archivo_original = request.POST['nombre']
+         archivo = re.sub(r'[^A-Za-z0-9]+', '_', archivo_original)
      
+         BASE_DIR = Path(__file__).resolve().parent.parent
+         ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.json')
+
+         if os.path.exists(ruta):
+             return HttpResponse("Error! El archivo " + archivo + " ya existe<br/><br/><a href='/'>Inicio</a>")
+
+
          # TODO: Elegir router
          router = Router.objects.first()
          connection = routeros_api.RouterOsApiPool(router.ip, username=router.usuario, password=router.password, plaintext_login=True)
@@ -239,11 +249,10 @@ def generar(request):
             'lsdb': lsdb.get(),
          }
          
-         BASE_DIR = Path(__file__).resolve().parent.parent
-         ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.json')
+
          with open(ruta, 'w') as f:
             json.dump(contenido, f, indent=2)
 
 
-         return HttpResponse("Generando archivo LSDB " + request.POST['nombre'])
+         return HttpResponse("Generando archivo LSDB " + archivo + "<br/><br/><a href='/'>Inicio</a>")
       
