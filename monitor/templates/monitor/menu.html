@@ -38,7 +38,12 @@
 	      {% endif %}
 	      {% if generar %}
 		    <form class="d-flex my-2 my-lg-0">
-			<a class="btn btn-primary my-2 my-sm-0" aria-label="Generar instantánea" href="/generar">+ Generar instantánea</a>
+			<a class="btn btn-primary my-2 my-sm-0 mx-2" aria-label="Generar instantánea" href="/generar">+ Generar instantánea</a>
+		    </form>
+	      {% endif %}
+	      {% if admin %}
+		    <form class="d-flex my-2 my-lg-0">
+			<a class="btn btn-secondary my-2 my-sm-0 mx-2" aria-label="Administración" href="/admin">Administración</a>
 		    </form>
 	      {% endif %}
 	    </div>
