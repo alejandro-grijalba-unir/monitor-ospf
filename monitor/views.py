@@ -9,9 +9,11 @@ import routeros_api
 from datetime import datetime
 from ipaddress import IPv4Network, IPv4Address
 import os.path
+from django.contrib.auth.decorators import login_required
 
 from .models import Router
 
+@login_required(login_url='/admin/login/?next=/')
 def index(request):
    
     # Listar archivos
@@ -33,6 +35,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+@login_required(login_url='/admin/login/?next=/')
 def cargar(request, archivo):
     BASE_DIR = Path(__file__).resolve().parent.parent
     ruta = BASE_DIR / 'lsdb' / (str(archivo) + '.json')
@@ -49,6 +52,7 @@ def cargar(request, archivo):
     return None, contenido, lsdb
 
 
+@login_required(login_url='/admin/login/?next=/')
 def visor(request, archivo):
     res, contenido, lsdb = cargar(request, archivo)
     if res:
@@ -132,6 +136,7 @@ def visor(request, archivo):
     return render(request, 'monitor/index.html', context)
 
 
+@login_required(login_url='/admin/login/?next=/')
 def visorestadisticas(request, archivo):
     res, contenido, lsdb = cargar(request, archivo)
     if res:
@@ -243,6 +248,7 @@ def visorestadisticas(request, archivo):
 
 
 # Vista para la generacion de una instantanea
+@login_required(login_url='/admin/login/?next=/')
 def generar(request):
     context = { 
             'routers': Router.objects.all()
@@ -251,6 +257,7 @@ def generar(request):
 
 
 # Generar archivo de volcado LSDB
+@login_required(login_url='/admin/login/?next=/')
 def generar_post(request):
    if request.POST:
          archivo_original = request.POST['nombre']
